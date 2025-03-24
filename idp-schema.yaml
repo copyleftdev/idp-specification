@@ -1,29 +1,67 @@
-openapi: 3.1.0
+openapi: 3.0.3
 info:
   title: Interactive Discovery Protocol (IDP)
   version: 1.0.0
-  description: >
-    IDP defines a structured, self-describing API protocol focused on auto-discovery,
-    explicit context management, and stateful interactions.
+  description: |
+    The Interactive Discovery Protocol (IDP) provides a structured, self-describing API for secure, context-aware, and state-managed interactions. Designed to facilitate seamless integration, robust security, and clarity in API operations.
+  contact:
+    name: copyleftdev
+    url: https://github.com/copyleftdev
   license:
     name: MIT
+
+servers:
+  - url: https://api.example.com/v1
+    description: Production API endpoint
+
+security:
+  - BearerAuth: []
 
 paths:
   /context:
     get:
-      summary: Retrieve Protocol Context
-      description: >
-        Provides a comprehensive protocol description including available endpoints,
-        schemas, state and context management details.
+      summary: Retrieve Comprehensive Protocol Context
+      description: |
+        Retrieves detailed metadata about the IDP implementation, including endpoint schemas, state management capabilities, authentication, and security requirements.
       responses:
         '200':
-          description: Successful retrieval of protocol context
+          description: OK - Protocol context retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProtocolContext'
+        '400':
+          description: Bad Request - Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - Authentication required or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal Server Error - Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     ProtocolContext:
       type: object
@@ -32,6 +70,7 @@ components:
         - version
         - endpoints
         - context_management
+        - security
       properties:
         protocol:
           type: string
@@ -44,21 +83,16 @@ components:
           additionalProperties:
             $ref: '#/components/schemas/EndpointDefinition'
         context_management:
+          $ref: '#/components/schemas/ContextManagement'
+        security:
           type: object
           properties:
-            session_timeout:
-              type: integer
-              description: "Session timeout duration in seconds"
-              example: 3600
-            operations:
-              type: array
-              items:
-                type: string
-                enum:
-                  - create
-                  - retrieve
-                  - update
-                  - expire
+            authentication:
+              type: string
+              example: "BearerAuth"
+            tls_required:
+              type: boolean
+              example: true
 
     EndpointDefinition:
       type: object
@@ -68,11 +102,7 @@ components:
       properties:
         method:
           type: string
-          enum:
-            - GET
-            - POST
-            - PUT
-            - DELETE
+          enum: [GET, POST, PUT, DELETE]
         description:
           type: string
         request_schema:
@@ -85,3 +115,50 @@ components:
           type: object
           additionalProperties:
             type: string
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+
+    ContextManagement:
+      type: object
+      properties:
+        session_timeout:
+          type: integer
+          example: 3600
+        operations:
+          type: array
+          items:
+            type: string
+            enum: [create, retrieve, update, expire]
+
+    ErrorResponse:
+      type: object
+      required:
+        - status
+        - error_code
+        - error_message
+      properties:
+        status:
+          type: integer
+          example: 400
+        error_code:
+          type: string
+          example: "InvalidParameter"
+        error_message:
+          type: string
+          example: "Missing required 'version' parameter in query string."
+
+    Pagination:
+      type: object
+      properties:
+        total_items:
+          type: integer
+          example: 250
+        total_pages:
+          type: integer
+          example: 25
+        current_page:
+          type: integer
+          example: 1
+        items_per_page:
+          type: integer
+          example: 10
