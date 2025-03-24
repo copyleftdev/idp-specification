@@ -1,7 +1,7 @@
 # Interactive Discovery Protocol (IDP) – Architectural Specification
 
 **Version:** 1.0.0  
-**Author:** Your Name / Organization  
+**Author:** Don Johnson 
 **License:** MIT  
 
 ---
