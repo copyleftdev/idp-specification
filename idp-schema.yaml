@@ -1,0 +1,87 @@
+openapi: 3.1.0
+info:
+  title: Interactive Discovery Protocol (IDP)
+  version: 1.0.0
+  description: >
+    IDP defines a structured, self-describing API protocol focused on auto-discovery,
+    explicit context management, and stateful interactions.
+  license:
+    name: MIT
+
+paths:
+  /context:
+    get:
+      summary: Retrieve Protocol Context
+      description: >
+        Provides a comprehensive protocol description including available endpoints,
+        schemas, state and context management details.
+      responses:
+        '200':
+          description: Successful retrieval of protocol context
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProtocolContext'
+
+components:
+  schemas:
+    ProtocolContext:
+      type: object
+      required:
+        - protocol
+        - version
+        - endpoints
+        - context_management
+      properties:
+        protocol:
+          type: string
+          example: "IDP"
+        version:
+          type: string
+          example: "1.0.0"
+        endpoints:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EndpointDefinition'
+        context_management:
+          type: object
+          properties:
+            session_timeout:
+              type: integer
+              description: "Session timeout duration in seconds"
+              example: 3600
+            operations:
+              type: array
+              items:
+                type: string
+                enum:
+                  - create
+                  - retrieve
+                  - update
+                  - expire
+
+    EndpointDefinition:
+      type: object
+      required:
+        - method
+        - description
+      properties:
+        method:
+          type: string
+          enum:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+        description:
+          type: string
+        request_schema:
+          type: object
+          additionalProperties: true
+        response_schema:
+          type: object
+          additionalProperties: true
+        examples:
+          type: object
+          additionalProperties:
+            type: string
